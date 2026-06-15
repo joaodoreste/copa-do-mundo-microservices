@@ -351,6 +351,17 @@ Retorno esperado:
   "status": "PARTIDA-SERVICE INDISPONÍVEL"
 }
 ```
+### Observação sobre o Circuit Breaker
+
+O Circuit Breaker foi configurado com:
+
+```properties
+resilience4j.circuitbreaker.instances.partidaService.wait-duration-in-open-state=10s
+```
+
+Quando o `partida-service` fica indisponível, o Circuit Breaker abre e passa a retornar o fallback configurado.
+
+Após o serviço voltar ao ar, é necessário aguardar aproximadamente **10 a 15 segundos** para que o Circuit Breaker permita novas chamadas e volte a encaminhar as requisições para o serviço normalmente.
 
 ---
 
