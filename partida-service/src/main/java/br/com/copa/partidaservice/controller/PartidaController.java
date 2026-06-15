@@ -23,4 +23,7 @@ public class PartidaController {
     public Partida salvar(@RequestBody Partida partida) {
         return service.salvar(partida);
     }
+
+    @GetMapping("/partidas/{id}")
+    public Partida buscarPorId(@PathVariable Long id) {return service.buscarPorId(id);}
 }

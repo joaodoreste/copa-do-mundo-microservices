@@ -20,4 +20,6 @@ public class PartidaService {
     public Partida salvar(Partida partida) {
         return repository.save(partida);
     }
+
+    public Partida buscarPorId(Long id) {return repository.findById(id).orElse(null);}
 }
