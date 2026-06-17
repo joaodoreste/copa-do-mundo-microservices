@@ -5,9 +5,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "partida-service", fallback = PartidaClientFallback.class)
+@FeignClient(name = "partida-service")
 public interface PartidaClient {
-
     @GetMapping("/partidas/{id}")
     PartidaResponse buscarPorId(@PathVariable Long id);
 }
