@@ -1,19 +1,112 @@
-# ⚽ Copa do Mundo Microservices
+# Copa do Mundo Microservices
 
-Projeto desenvolvido para a disciplina de Arquitetura de Microservices utilizando Spring Boot e Spring Cloud.
+## Integrantes
 
-O sistema simula um ambiente de gerenciamento de partidas e notícias relacionadas à Copa do Mundo, utilizando uma arquitetura baseada em microsserviços com descoberta de serviços, API Gateway, comunicação entre serviços e mecanismo de resiliência.
-
----
-
-# 👨‍💻 Integrantes
-
-- João Gabriel Raja
-- Henrique Goldstein
+- João Gabriel Raja Gabaglia Doreste
+- (Adicionar demais integrantes)
 
 ---
 
-# 🛠 Tecnologias Utilizadas
+# Descrição do Projeto
+
+Sistema distribuído baseado em microsserviços para gerenciamento de partidas e notícias da Copa do Mundo.
+
+A solução foi desenvolvida utilizando arquitetura de microsserviços com comunicação síncrona e assíncrona, descoberta de serviços, gateway centralizado, persistência distribuída, observabilidade, resiliência e programação reativa.
+
+---
+
+# Arquitetura
+
+## Discovery Server
+
+Responsável pelo registro e descoberta dos microsserviços utilizando Eureka Server.
+
+Porta:
+
+```text
+8761
+```
+
+---
+
+## API Gateway
+
+Responsável pelo roteamento centralizado das requisições para os microsserviços.
+
+Porta:
+
+```text
+8080
+```
+
+Rotas principais:
+
+```text
+/api/partidas/**
+/api/noticias/**
+```
+
+---
+
+## Partida Service
+
+Responsável pelo gerenciamento das partidas da Copa do Mundo.
+
+### Tecnologias
+
+- Spring Boot
+- Spring Data JPA
+- PostgreSQL
+- Eureka Client
+- Kafka Producer
+- Spring Actuator
+
+### Porta
+
+```text
+8081
+```
+
+### Funcionalidades
+
+- Cadastro de partidas
+- Consulta de partidas
+- Publicação de eventos Kafka
+- Observabilidade via Actuator
+
+---
+
+## Noticia Service
+
+Responsável pelo gerenciamento das notícias.
+
+### Tecnologias
+
+- Spring Boot
+- MongoDB
+- Kafka Consumer
+- OpenFeign
+- Resilience4J
+- Spring Actuator
+- Project Reactor
+
+### Porta
+
+```text
+8082
+```
+
+### Funcionalidades
+
+- Cadastro de notícias
+- Consulta de notícias
+- Criação automática de notícias através de eventos Kafka
+- Endpoint reativo
+- Circuit Breaker
+
+---
+
+# Tecnologias Utilizadas
 
 - Java 21
 - Spring Boot
@@ -21,100 +114,123 @@ O sistema simula um ambiente de gerenciamento de partidas e notícias relacionad
 - Eureka Server
 - Spring Cloud Gateway
 - OpenFeign
-- Resilience4j
+- Apache Kafka
 - PostgreSQL
 - MongoDB
+- Resilience4J
+- Spring Boot Actuator
+- Project Reactor
 - Docker
 - Maven
 
 ---
 
-# 🏗 Arquitetura do Projeto
-
-O projeto é composto pelos seguintes microsserviços:
-
-| Serviço | Porta | Responsabilidade |
-|----------|--------|------------------|
-| Discovery Server | 8761 | Registro e descoberta dos serviços |
-| API Gateway | 8080 | Ponto único de entrada da aplicação |
-| Partida Service | 8081 | Cadastro e consulta de partidas |
-| Notícia Service | 8082 | Cadastro e consulta de notícias |
-
----
-
-# 📋 Pré-requisitos
+# Pré-requisitos
 
 Antes de executar o projeto é necessário possuir instalado:
 
 - Java 21
-- Maven
-- PostgreSQL
+- Maven 3.9+
 - Docker Desktop
-- IntelliJ IDEA
+- PostgreSQL
+- Git
+
+Verificar instalações:
+
+```bash
+java -version
+```
+
+```bash
+mvn -version
+```
+
+```bash
+docker --version
+```
 
 ---
 
-# 🐘 Configuração do PostgreSQL
+# Infraestrutura Docker
 
-O PostgreSQL é utilizado pelo serviço de partidas.
+O projeto utiliza Docker para executar:
 
-Criar o banco:
+- Kafka
+- MongoDB
+
+## Iniciar containers
+
+Na raiz do projeto:
+
+```bash
+docker compose up -d
+```
+
+Verificar containers:
+
+```bash
+docker ps
+```
+
+Resultado esperado:
+
+```text
+kafka-copa
+mongo-copa
+```
+
+## Parar containers
+
+```bash
+docker compose down
+```
+
+## Recriar ambiente Docker
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+---
+
+# Configuração do Banco PostgreSQL
+
+Criar banco:
 
 ```sql
 CREATE DATABASE partidas_db;
 ```
 
-Configurar o arquivo:
-
-`partida-service/src/main/resources/application.properties`
+Configuração utilizada:
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/partidas_db
 spring.datasource.username=postgres
-spring.datasource.password=SUA_SENHA
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+spring.datasource.password=12345678
 ```
+
+> Ajustar usuário e senha conforme ambiente local.
 
 ---
 
-# 🍃 Configuração do MongoDB
+# Ordem de Inicialização
 
-O MongoDB é utilizado pelo serviço de notícias.
+Os serviços devem ser iniciados na seguinte ordem:
 
-Subir o container Docker:
-
-```bash
-docker run --name mongodb-copa -p 27017:27017 -d mongo:latest
-```
-
-Caso o container já exista:
-
-```bash
-docker start mongodb-copa
-```
-
-Configurar o arquivo:
-
-`noticia-service/src/main/resources/application.properties`
-
-```properties
-spring.data.mongodb.uri=mongodb://localhost:27017/noticias_db
-```
-
----
-
-# 🚀 Como Executar o Projeto
-
-Inicie os serviços na seguinte ordem:
-
-### 1. Discovery Server
+## 1. Discovery Server
 
 Executar:
 
+```bash
+cd discovery-server
+mvn spring-boot:run
+```
+
+Porta:
+
 ```text
-DiscoveryServerApplication
+8761
 ```
 
 Acessar:
@@ -125,44 +241,13 @@ http://localhost:8761
 
 ---
 
-### 2. Partida Service
+## 2. API Gateway
 
 Executar:
 
-```text
-PartidaServiceApplication
-```
-
-Porta:
-
-```text
-8081
-```
-
----
-
-### 3. Notícia Service
-
-Executar:
-
-```text
-NoticiaServiceApplication
-```
-
-Porta:
-
-```text
-8082
-```
-
----
-
-### 4. API Gateway
-
-Executar:
-
-```text
-ApiGatewayApplication
+```bash
+cd api-gateway
+mvn spring-boot:run
 ```
 
 Porta:
@@ -173,7 +258,41 @@ Porta:
 
 ---
 
-# 🔍 Verificando o Eureka
+## 3. Partida Service
+
+Executar:
+
+```bash
+cd partida-service
+mvn spring-boot:run
+```
+
+Porta:
+
+```text
+8081
+```
+
+---
+
+## 4. Noticia Service
+
+Executar:
+
+```bash
+cd noticia-service
+mvn spring-boot:run
+```
+
+Porta:
+
+```text
+8082
+```
+
+---
+
+# Verificando Registro no Eureka
 
 Após iniciar todos os serviços, acessar:
 
@@ -181,38 +300,182 @@ Após iniciar todos os serviços, acessar:
 http://localhost:8761
 ```
 
-Os seguintes serviços devem aparecer registrados:
+Serviços esperados:
 
-```text
-API-GATEWAY
-PARTIDA-SERVICE
-NOTICIA-SERVICE
+- API-GATEWAY
+- PARTIDA-SERVICE
+- NOTICIA-SERVICE
+
+---
+
+# Comunicação Síncrona
+
+O Noticia Service utiliza OpenFeign para consultar dados do Partida Service.
+
+Endpoint:
+
+```http
+GET /api/noticias/partida/{id}
 ```
 
 ---
 
-# 🌐 API Gateway
+# Comunicação Assíncrona com Kafka
 
-O Gateway é a única porta de entrada para os microsserviços.
+## Evento de Domínio
 
-URL base:
+Evento:
 
 ```text
-http://localhost:8080
+PartidaCriadaEvent
 ```
 
-Rotas configuradas:
+Tópico:
 
-| Rota | Serviço |
-|--------|----------|
-| /api/partidas/** | partida-service |
-| /api/noticias/** | noticia-service |
+```text
+partidas.criadas
+```
+
+## Fluxo
+
+1. Usuário cadastra uma partida.
+2. Partida Service salva a partida no PostgreSQL.
+3. Partida Service publica evento no Kafka.
+4. Noticia Service consome o evento.
+5. Noticia Service cria uma notícia automaticamente.
+6. Notícia é salva no MongoDB.
 
 ---
 
-# ⚽ Endpoints de Partidas
+# Correlação de Chamadas
 
-## Cadastrar Partida
+O sistema utiliza Correlation ID para rastrear uma operação entre microsserviços.
+
+Exemplo:
+
+```text
+[CORRELATION-ID: xxxxx]
+Evento enviado para Kafka
+
+[CORRELATION-ID: xxxxx]
+Mensagem recebida do Kafka
+
+[CORRELATION-ID: xxxxx]
+Notícia criada automaticamente no MongoDB
+```
+
+Essa abordagem permite rastrear uma requisição ponta a ponta.
+
+---
+
+# Resiliência
+
+Foi utilizado Resilience4J integrado ao OpenFeign.
+
+Objetivos:
+
+- Evitar falhas em cascata
+- Implementar Circuit Breaker
+- Disponibilizar fallback para chamadas indisponíveis
+
+Endpoint de teste:
+
+```http
+GET /api/noticias/resiliencia/{id}
+```
+
+---
+
+# Observabilidade
+
+Foi utilizado Spring Boot Actuator.
+
+Endpoints disponíveis:
+
+```text
+/actuator
+/actuator/health
+/actuator/info
+/actuator/metrics
+```
+
+Exemplos de métricas monitoradas:
+
+- http.server.requests
+- spring.kafka.listener
+- spring.kafka.template
+- mongodb.driver.commands
+- resilience4j.circuitbreaker.calls
+- resilience4j.circuitbreaker.state
+- hikaricp.connections
+- jvm.memory.used
+- process.cpu.usage
+
+Exemplo:
+
+```http
+GET http://localhost:8081/actuator/metrics/http.server.requests
+```
+
+```http
+GET http://localhost:8082/actuator/metrics/spring.kafka.listener
+```
+
+---
+
+# Programação Reativa
+
+Foi implementado endpoint reativo utilizando Project Reactor.
+
+Endpoint:
+
+```http
+GET /api/noticias/reactive
+```
+
+Retorno:
+
+```java
+Flux<Noticia>
+```
+
+Objetivo:
+
+Demonstrar processamento reativo e streaming de dados utilizando Reactor.
+
+---
+
+# Bancos de Dados
+
+## PostgreSQL
+
+Utilizado pelo Partida Service.
+
+Tabela principal:
+
+```text
+partidas
+```
+
+---
+
+## MongoDB
+
+Utilizado pelo Noticia Service.
+
+Collection:
+
+```text
+noticias
+```
+
+---
+
+# Testando o Sistema
+
+## 1. Cadastrar Partida
+
+Requisição:
 
 ```http
 POST http://localhost:8080/api/partidas
@@ -222,169 +485,76 @@ Body:
 
 ```json
 {
-  "selecaoMandante": "México",
-  "selecaoVisitante": "Coréia do Sul",
-  "golsMandante": 2,
+  "selecaoMandante": "Brasil",
+  "selecaoVisitante": "Argentina",
+  "golsMandante": 0,
   "golsVisitante": 0,
   "fase": "Grupo",
-  "status": "FINALIZADA"
+  "status": "AGENDADA"
 }
 ```
 
----
-
-## Listar Partidas
-
-```http
-GET http://localhost:8080/api/partidas
-```
-
----
-
-## Buscar Partida por ID
-
-```http
-GET http://localhost:8080/api/partidas/1
-```
-
----
-
-# 📰 Endpoints de Notícias
-
-## Cadastrar Notícia
-
-```http
-POST http://localhost:8080/api/noticias
-```
-
-Body:
+Resposta esperada:
 
 ```json
 {
-  "titulo": "México vence a África do Sul",
-  "conteudo": "A seleção mexicana venceu por 2x0 a África do Sul em um jogo com 3 expulsões.",
-  "autor": "UOL",
-  "dataPublicacao": "2026-06-12"
+  "id": 1,
+  "selecaoMandante": "Brasil",
+  "selecaoVisitante": "Argentina",
+  "golsMandante": 0,
+  "golsVisitante": 0,
+  "fase": "Grupo",
+  "status": "AGENDADA"
 }
 ```
 
 ---
 
-## Listar Notícias
+## 2. Verificar Notícia Criada Automaticamente
+
+Requisição:
 
 ```http
 GET http://localhost:8080/api/noticias
 ```
 
----
-
-# 🔗 Comunicação Entre Microsserviços
-
-O serviço de notícias consulta informações do serviço de partidas utilizando OpenFeign.
-
-Endpoint:
-
-```http
-GET http://localhost:8080/api/noticias/partida/1
-```
-
----
-
-# 🛡 Resiliência com Resilience4j
-
-Foi implementado um mecanismo de fallback utilizando Resilience4j.
-
-Quando o serviço de partidas estiver indisponível, o serviço de notícias continua respondendo normalmente através de uma resposta alternativa.
-
----
-
-## Teste de Resiliência
-
-### Cenário 1 - Serviço disponível
-
-Com todos os microsserviços ligados:
-
-```http
-GET http://localhost:8080/api/noticias/partida/1
-```
-
-Retorno esperado:
+Resposta esperada:
 
 ```json
-{
-  "id": 1,
-  "selecaoMandante": "México",
-  "selecaoVisitante": "África do Sul",
-  "golsMandante": 2,
-  "golsVisitante": 0,
-  "fase": "Grupo",
-  "status": "FINALIZADA"
-}
+[
+  {
+    "titulo": "Nova partida cadastrada",
+    "conteudo": "Brasil x Argentina foi cadastrada na fase Grupo"
+  }
+]
 ```
 
 ---
 
-### Cenário 2 - Serviço indisponível
+## 3. Testar Endpoint Reativo
 
-Parar o microsserviço:
-
-```text
-PartidaServiceApplication
-```
-
-Executar novamente:
+Requisição:
 
 ```http
-GET http://localhost:8080/api/noticias/partida/1
+GET http://localhost:8080/api/noticias/reactive
 ```
 
-Retorno esperado:
-
-```json
-{
-  "id": 1,
-  "selecaoMandante": "Indisponível",
-  "selecaoVisitante": "Indisponível",
-  "golsMandante": 0,
-  "golsVisitante": 0,
-  "fase": "Indisponível",
-  "status": "PARTIDA-SERVICE INDISPONÍVEL"
-}
-```
-### Observação sobre o Circuit Breaker
-
-O Circuit Breaker foi configurado com:
-
-```properties
-resilience4j.circuitbreaker.instances.partidaService.wait-duration-in-open-state=10s
-```
-
-Quando o `partida-service` fica indisponível, o Circuit Breaker abre e passa a retornar o fallback configurado.
-
-Após o serviço voltar ao ar, é necessário aguardar aproximadamente **10 a 15 segundos** para que o Circuit Breaker permita novas chamadas e volte a encaminhar as requisições para o serviço normalmente.
+Retorna fluxo reativo de notícias utilizando Project Reactor.
 
 ---
 
-# 📂 Repositório
+# Conclusão
 
-GitHub:
+O projeto demonstra a aplicação dos principais conceitos de arquitetura de microsserviços:
 
-```text
-https://github.com/joaodoreste/copa-do-mundo-microservices
-```
+- Comunicação síncrona com OpenFeign
+- Comunicação assíncrona com Kafka
+- Descoberta de serviços com Eureka
+- Gateway centralizado
+- Persistência distribuída
+- Resiliência com Resilience4J
+- Observabilidade com Spring Actuator
+- Correlação de requisições
+- Programação Reativa com Project Reactor
 
----
-
-# ✅ Funcionalidades Implementadas
-
-- Cadastro de partidas
-- Consulta de partidas
-- Cadastro de notícias
-- Consulta de notícias
-- Service Discovery com Eureka
-- API Gateway
-- Comunicação entre microsserviços utilizando OpenFeign
-- Persistência em PostgreSQL
-- Persistência em MongoDB
-- Resiliência utilizando Resilience4j
-- Fallback automático em caso de indisponibilidade do serviço de partidas
+Todos os requisitos da segunda etapa do projeto foram implementados e validados através de testes funcionais.
