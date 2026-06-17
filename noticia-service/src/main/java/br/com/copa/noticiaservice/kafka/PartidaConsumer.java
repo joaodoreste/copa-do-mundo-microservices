@@ -27,21 +27,37 @@ public class PartidaConsumer {
     )
     public void consumir(String mensagem) {
         try {
-            log.info("Mensagem recebida do Kafka: {}", mensagem);
 
-            PartidaCriadaEvent event = objectMapper.readValue(mensagem, PartidaCriadaEvent.class);
+            PartidaCriadaEvent event =
+                    objectMapper.readValue(mensagem, PartidaCriadaEvent.class);
+
+            log.info(
+                    "[CORRELATION-ID: {}] Mensagem recebida do Kafka: {} x {}",
+                    event.getCorrelationId(),
+                    event.getSelecaoMandante(),
+                    event.getSelecaoVisitante()
+            );
 
             Noticia noticia = Noticia.builder()
                     .titulo("Nova partida cadastrada")
-                    .conteudo(event.getSelecaoMandante() + " x " + event.getSelecaoVisitante()
-                            + " foi cadastrada na fase " + event.getFase())
+                    .conteudo(
+                            event.getSelecaoMandante()
+                                    + " x "
+                                    + event.getSelecaoVisitante()
+                                    + " foi cadastrada na fase "
+                                    + event.getFase()
+                    )
                     .autor("Kafka")
                     .dataPublicacao(LocalDate.now().toString())
                     .build();
 
             repository.save(noticia);
 
-            log.info("Notícia criada automaticamente no MongoDB.");
+            log.info(
+                    "[CORRELATION-ID: {}] Notícia criada automaticamente no MongoDB.",
+                    event.getCorrelationId()
+            );
+
         } catch (Exception e) {
             log.error("Erro ao consumir evento de partida criada", e);
         }

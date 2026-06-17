@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +25,14 @@ public class PartidaService {
 
         Partida salva = repository.save(partida);
 
+        String correlationId = UUID.randomUUID().toString();
+
         PartidaCriadaEvent event = PartidaCriadaEvent.builder()
                 .id(salva.getId())
                 .selecaoMandante(salva.getSelecaoMandante())
                 .selecaoVisitante(salva.getSelecaoVisitante())
                 .fase(salva.getFase())
+                .correlationId(correlationId)
                 .build();
 
         producer.publicar(event);
@@ -36,5 +40,7 @@ public class PartidaService {
         return salva;
     }
 
-    public Partida buscarPorId(Long id) {return repository.findById(id).orElse(null);}
+    public Partida buscarPorId(Long id) {
+        return repository.findById(id).orElse(null);
+    }
 }

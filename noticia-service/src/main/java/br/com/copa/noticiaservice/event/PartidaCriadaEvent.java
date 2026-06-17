@@ -13,4 +13,5 @@ public class PartidaCriadaEvent {
     private String selecaoMandante;
     private String selecaoVisitante;
     private String fase;
+    private String correlationId;
 }

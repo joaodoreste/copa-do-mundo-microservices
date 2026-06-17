@@ -20,9 +20,17 @@ public class PartidaProducer {
             kafkaTemplate.send("partidas.criadas", json)
                     .whenComplete((result, ex) -> {
                         if (ex != null) {
-                            System.out.println("Erro ao publicar evento no Kafka: " + ex.getMessage());
+                            System.out.println(
+                                    "[CORRELATION-ID: " + event.getCorrelationId() + "] "
+                                            + "Erro ao publicar evento no Kafka: "
+                                            + ex.getMessage()
+                            );
                         } else {
-                            System.out.println("Evento enviado com sucesso para o Kafka: " + json);
+                            System.out.println(
+                                    "[CORRELATION-ID: " + event.getCorrelationId() + "] "
+                                            + "Evento enviado com sucesso para o Kafka: "
+                                            + json
+                            );
                         }
                     });
 
