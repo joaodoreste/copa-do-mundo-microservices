@@ -6,6 +6,8 @@ import br.com.copa.noticiaservice.service.NoticiaService;
 import br.com.copa.noticiaservice.service.PartidaConsultaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -29,4 +31,9 @@ public class NoticiaController {
 
     @GetMapping("/noticias/partida/{id}")
     public PartidaResponse buscarPartida(@PathVariable Long id) {return partidaConsultaService.buscarPartida(id);}
+
+    @GetMapping(value = "/noticias/reactive", produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public Flux<Noticia> listarReativo() {
+        return service.listarReativo();
+    }
 }
