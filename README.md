@@ -157,6 +157,7 @@ O projeto utiliza Docker para executar:
 
 - Kafka
 - MongoDB
+- Zipkin
 
 ## Iniciar containers
 
@@ -177,6 +178,7 @@ Resultado esperado:
 ```text
 kafka-copa
 mongo-copa
+zipkin-copa
 ```
 
 ## Parar containers
@@ -420,6 +422,97 @@ GET http://localhost:8081/actuator/metrics/http.server.requests
 ```http
 GET http://localhost:8082/actuator/metrics/spring.kafka.listener
 ```
+
+---
+
+# Rastreamento Distribuído com Zipkin
+
+O projeto registra rastreamento distribuido com Micrometer Tracing, Brave e Zipkin.
+
+O Zipkin e executado pelo Docker Compose na porta:
+
+```text
+9411
+```
+
+Acessar:
+
+```text
+http://localhost:9411
+```
+
+Cada microsservico envia spans para:
+
+```properties
+management.tracing.export.zipkin.endpoint=http://localhost:9411/api/v2/spans
+```
+
+Tambem foi configurado:
+
+```properties
+management.tracing.sampling.probability=1.0
+management.tracing.propagation.type=w3c,b3
+```
+
+Para demonstracao academica, `sampling.probability=1.0` envia 100% das requisicoes para o Zipkin.
+
+## Servicos rastreados
+
+```text
+api-gateway
+partida-service
+noticia-service
+discovery-server
+```
+
+## Kafka no rastreamento
+
+O `partida-service` habilita observacao no `KafkaTemplate`, e o `noticia-service` habilita observacao no `KafkaListener`.
+
+Com isso, o fluxo assincrono tambem aparece no Zipkin:
+
+```text
+api-gateway -> partida-service -> Kafka -> noticia-service
+```
+
+## Testar no Zipkin
+
+1. Subir a infraestrutura:
+
+```bash
+docker compose up -d
+```
+
+2. Iniciar os servicos na ordem:
+
+```text
+discovery-server
+api-gateway
+partida-service
+noticia-service
+```
+
+3. Cadastrar uma partida pelo gateway:
+
+```http
+POST http://localhost:8080/api/partidas
+```
+
+4. Abrir:
+
+```text
+http://localhost:9411
+```
+
+5. Clicar em `Run Query` e filtrar por um dos servicos:
+
+```text
+api-gateway
+partida-service
+noticia-service
+```
+
+O trace esperado deve mostrar a chamada HTTP passando pelo gateway, a execucao no `partida-service`, a publicacao no Kafka e o consumo no `noticia-service`.
 
 ---
 

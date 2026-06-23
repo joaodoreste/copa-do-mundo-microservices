@@ -22,3 +22,9 @@ services:
     container_name: mongo-copa
     ports:
       - "27017:27017"
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin-copa
+    ports:
+      - "9411:9411"
