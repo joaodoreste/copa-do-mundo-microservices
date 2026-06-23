@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="discovery-server"/>
+
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] ${APP_NAME} %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="PAPERTRAIL_HTTP" class="br.com.copa.discoveryserver.logging.PapertrailHttpAppender">
+        <url>${PAPERTRAIL_URL}</url>
+        <token>${PAPERTRAIL_TOKEN}</token>
+        <appName>${APP_NAME}</appName>
+    </appender>
+
+    <appender name="PAPERTRAIL" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="PAPERTRAIL_HTTP"/>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="PAPERTRAIL"/>
+    </root>
+</configuration>

@@ -423,6 +423,96 @@ GET http://localhost:8082/actuator/metrics/spring.kafka.listener
 
 ---
 
+# Logs Centralizados com Papertrail
+
+O projeto tambem esta configurado para enviar logs de todos os microsservicos para o Papertrail usando Logback via HTTPS.
+
+Cada servico possui um arquivo:
+
+```text
+src/main/resources/logback-spring.xml
+```
+
+A configuracao usa variaveis de ambiente. Se `PAPERTRAIL_URL` e `PAPERTRAIL_TOKEN` estiverem configuradas, os logs sao enviados ao Papertrail. Se nao estiverem, os servicos continuam rodando apenas com logs no console.
+
+## Configurar variaveis de ambiente
+
+No painel do Papertrail, crie ou acesse um log destination e abra a aba `Usage Instructions`. Selecione `HTTPS` e copie:
+
+- `Endpoint`
+- `Token`
+
+Exemplo de endpoint:
+
+```text
+https://logs.collector.na-01.cloud.solarwinds.com/v1/logs
+```
+
+No PowerShell, configure:
+
+```powershell
+$env:PAPERTRAIL_URL="https://logs.collector.na-01.cloud.solarwinds.com/v1/logs"
+$env:PAPERTRAIL_TOKEN="SEU_TOKEN_DO_PAPERTRAIL"
+```
+
+Substitua o token pelo valor real da sua conta. Nao coloque o token fixo no codigo.
+
+## Executar com Papertrail
+
+Configure as variaveis acima no terminal, no IntelliJ ou nas variaveis de ambiente do Windows. Depois execute os servicos normalmente.
+
+Exemplo pelo PowerShell:
+
+```powershell
+cd discovery-server
+.\mvnw.cmd spring-boot:run
+```
+
+Use o mesmo padrao para os outros servicos:
+
+```powershell
+cd api-gateway
+.\mvnw.cmd spring-boot:run
+```
+
+```powershell
+cd partida-service
+.\mvnw.cmd spring-boot:run
+```
+
+```powershell
+cd noticia-service
+.\mvnw.cmd spring-boot:run
+```
+
+No IntelliJ, tambem e possivel rodar diretamente as classes `DiscoveryServerApplication`, `ApiGatewayApplication`, `PartidaServiceApplication` e `NoticiaServiceApplication`, desde que as variaveis de ambiente estejam configuradas nas Run Configurations ou no Windows.
+
+## Testar o envio de logs
+
+1. Inicie pelo menos o `discovery-server`.
+2. Acesse:
+
+```text
+http://localhost:8761
+```
+
+3. No Papertrail, pesquise pelo nome do servico:
+
+```text
+discovery-server
+```
+
+Ao iniciar todos os servicos e testar as rotas do projeto, os logs podem ser filtrados por:
+
+```text
+api-gateway
+partida-service
+noticia-service
+discovery-server
+```
+
+---
+
 # Programação Reativa
 
 Foi implementado endpoint reativo utilizando Project Reactor.
